@@ -46,14 +46,39 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * Copyright (c) 2008, 2022, Oracle and/or its affiliates. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
+ */
 // SPDX-License-Identifier: GPL-2.0-only WITH Classpath-exception-2.0
 // Ported from openjdk 21.0.13: src/java.base/share/classes/java/nio/file/Path.java
 // Ported from openjdk 21.0.13: src/java.base/unix/classes/sun/nio/fs/UnixPath.java
 // Ported from openjdk 21.0.13: src/java.base/windows/classes/sun/nio/fs/WindowsPathParser.java
+// Ported from openjdk 21.0.13: src/java.base/windows/classes/sun/nio/fs/WindowsPath.java
 // Modified by the Flint authors.
 module flint.java.nio.file.path;
 
-import flint.java.lang : IllegalArgumentException;
+import flint.java.lang : ClassCastException, Comparable, IllegalArgumentException, JavaObject, NullPointerException;
 import flint.java.nio.file.invalidpathexception : InvalidPathException;
 
 @safe:
@@ -83,8 +108,7 @@ else
 }
 
 /// A path described by a root and a sequence of names.
-/// Provider-specific equality and hashing are deferred in this lexical slice.
-interface Path
+interface Path : Comparable!Path
 {
     /// Joins the nonempty path parts using the default provider's separator.
     /// Null strings and an array of additional parts that is null count as empty (R26).
@@ -124,6 +148,22 @@ interface Path
     /// Returns the relative sequence of names in the half-open interval.
     Path subpath(int beginIndex, int endIndex);
 
+    /// Orders paths from the same provider by its lexical rules.
+    /// Throws NullPointerException for a null path and ClassCastException for a different provider.
+    override int compareTo(Path other);
+
+    /// Returns whether the other object is an equal path from the same provider.
+    bool equals(Object other);
+
+    /// Compares another path interface reference (R11).
+    bool equals(T)(T other) if (is(T == interface) && is(T : Path))
+    {
+        return equals(cast(Object) other);
+    }
+
+    /// Returns the provider's hash of the path spelling.
+    int hashCode();
+
     /// Returns the path spelling.
     string toString();
 }
@@ -148,6 +188,12 @@ private string joinPath(string first, scope const(string)[] more, char separator
         input ~= part;
     }
     return input;
+}
+
+// R8 keeps explicit null reference failures out of the common path.
+pragma(inline, false) package(flint.java.nio.file) noreturn throwNullPathReference()
+{
+    throw new NullPointerException;
 }
 
 static if (includeUnixPath)
@@ -176,10 +222,102 @@ static if (includeUnixPath)
             path = path[0 .. $ - 1];
         return new LexicalPath(path, absolute ? 1 : 0, absolute, '/');
     }
+
+    private int compareUnixPaths(string first, string second) pure nothrow @nogc
+    {
+        auto length = first.length < second.length ? first.length : second.length;
+        foreach (i; 0 .. length)
+        {
+            int difference = cast(ubyte) first[i] - cast(ubyte) second[i];
+            if (difference)
+                return difference;
+        }
+        return cast(int) first.length - cast(int) second.length;
+    }
+
+    private int unixPathHash(string path) pure nothrow @nogc
+    {
+        uint hash;
+        foreach (ch; path)
+            hash = 31 * hash + cast(ubyte) ch;
+        return cast(int) hash;
+    }
 }
 
 static if (includeWindowsPath)
 {
+    import flint.engine.aot.text : decodeUtf8;
+    import flint.java.character : toUpperCase;
+
+    // WindowsPath compares Java char units. Case folding must leave each surrogate unit separate.
+    private struct WindowsPathUnits
+    {
+        string text;
+        size_t offset;
+        wchar pending = 0;
+
+        bool empty() const pure nothrow @nogc
+        {
+            return offset == text.length && pending == 0;
+        }
+
+        wchar next() pure nothrow @nogc
+        {
+            if (pending)
+            {
+                wchar unit = pending;
+                pending = 0;
+                return unit;
+            }
+
+            auto codePoint = decodeUtf8(text, offset);
+            if (codePoint <= 0xFFFF)
+                return cast(wchar) codePoint;
+
+            auto supplementary = codePoint - 0x10000;
+            pending = cast(wchar)(0xDC00 + (supplementary & 0x3FF));
+            return cast(wchar)(0xD800 + (supplementary >> 10));
+        }
+
+        int remainingLength() pure nothrow @nogc
+        {
+            int length;
+            while (!empty())
+            {
+                next();
+                ++length;
+            }
+            return length;
+        }
+    }
+
+    private int compareWindowsPaths(string first, string second) pure nothrow @nogc
+    {
+        auto left = WindowsPathUnits(first);
+        auto right = WindowsPathUnits(second);
+        while (!left.empty() && !right.empty())
+        {
+            auto a = left.next();
+            auto b = right.next();
+            if (a != b)
+            {
+                auto difference = cast(int) cast(wchar) toUpperCase(a) - cast(wchar) toUpperCase(b);
+                if (difference)
+                    return difference;
+            }
+        }
+        return left.remainingLength() - right.remainingLength();
+    }
+
+    private int windowsPathHash(string text) pure nothrow @nogc
+    {
+        auto units = WindowsPathUnits(text);
+        uint hash;
+        while (!units.empty())
+            hash = 31 * hash + cast(wchar) toUpperCase(units.next());
+        return cast(int) hash;
+    }
+
     private enum WindowsKind
     {
         relative,
@@ -341,6 +479,8 @@ static if (includeWindowsPath)
 
 private final class LexicalPath : Path
 {
+    mixin JavaObject;
+
     private const string text;
     private const size_t rootLength;
     private const bool absolute;
@@ -405,9 +545,45 @@ private final class LexicalPath : Path
         return new LexicalPath(text[begin .. nameEnd(last)], 0, false, separator);
     }
 
+    override int compareTo(Path other)
+    {
+        if (other is null)
+            throwNullPathReference();
+        auto peer = cast(LexicalPath) other;
+        if (peer is null || separator != peer.separator)
+            throw new ClassCastException;
+        return compareSpelling(peer.text);
+    }
+
+    override bool equals(Object other)
+    {
+        auto peer = cast(LexicalPath) other;
+        return peer !is null && separator == peer.separator && compareSpelling(peer.text) == 0;
+    }
+
+    override int hashCode() nothrow @nogc
+    {
+        static if (includeUnixPath && includeWindowsPath)
+            return separator == '\\' ? windowsPathHash(text) : unixPathHash(text);
+        else static if (includeWindowsPath)
+            return windowsPathHash(text);
+        else
+            return unixPathHash(text);
+    }
+
     override string toString()
     {
         return text;
+    }
+
+    private int compareSpelling(string other) const pure nothrow @nogc
+    {
+        static if (includeUnixPath && includeWindowsPath)
+            return separator == '\\' ? compareWindowsPaths(text, other) : compareUnixPaths(text, other);
+        else static if (includeWindowsPath)
+            return compareWindowsPaths(text, other);
+        else
+            return compareUnixPaths(text, other);
     }
 
     private size_t lastNameStart() const pure nothrow @nogc
