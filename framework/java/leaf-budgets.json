@@ -23,6 +23,10 @@
     "incremental_linked_bytes": 80,
     "template_instances": 2
   },
+  "flint.java.lang.threadlocal": {
+    "incremental_linked_bytes": 18582,
+    "template_instances": 330
+  },
   "flint.java.object": {
     "incremental_linked_bytes": 1244,
     "template_instances": 35
