@@ -1,0 +1,12 @@
+{
+  "source": "closure/threadlocal-native.d",
+  "leaves": [
+    "flint.java.lang",
+    "flint.java.lang.internal.threadlocalbindings",
+    "flint.java.lang.internal.threadlocalprovider",
+    "flint.java.lang.sys.threadtable",
+    "flint.java.util.function_.supplier",
+    "flint.java.nativethreadlocal"
+  ],
+  "data": []
+}

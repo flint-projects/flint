@@ -1,0 +1,5 @@
+name "probe-java-fiber-baseline"
+targetType "executable"
+targetPath "build"
+dflags "-preview=dip1000"
+dependency "flint:engine-reactor" path="../../../.."

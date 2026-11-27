@@ -1,0 +1,8 @@
+Flint Java Fiber
+Copyright 2026 The Flint authors
+
+This package connects Java ThreadLocal bindings to Flint's engine reactor.
+It contains original Flint code, including its tests and build probes.
+
+SPDX-License-Identifier: GPL-2.0-only WITH Classpath-exception-2.0
+See LICENSE for the license and Classpath Exception.

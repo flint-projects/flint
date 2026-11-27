@@ -1,0 +1,6 @@
+name "java-sys-probe"
+targetType "executable"
+sourcePaths "source"
+targetPath "build"
+dflags "-preview=dip1000"
+dependency "flint:java-sys" path="../../.."

@@ -1,0 +1,7 @@
+{
+  "flint.java.fiber": {
+    "incremental_linked_bytes": 2112,
+    "template_instances": 318,
+    "control": "framework/java-fiber/closure/install-control.d"
+  }
+}

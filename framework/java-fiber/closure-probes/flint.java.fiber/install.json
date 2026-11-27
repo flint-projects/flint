@@ -1,0 +1,8 @@
+{
+  "source": "closure/install.d",
+  "leaves": [
+    "flint.java.lang.internal.threadlocalbindings",
+    "flint.java.lang.internal.threadlocalprovider"
+  ],
+  "data": []
+}

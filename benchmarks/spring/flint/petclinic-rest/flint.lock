@@ -313,7 +313,7 @@ name = "flint:java"
 kind = "core"
 source = "workspace"
 scope = "build"
-dependencies = ["flint:engine-aot", "flint:serde"]
+dependencies = ["flint:engine-aot", "flint:java-sys", "flint:serde"]
 
 [[package]]
 name = "flint:java-concurrent"
@@ -328,6 +328,13 @@ kind = "core"
 source = "workspace"
 scope = "build"
 dependencies = ["flint:engine-aot", "flint:java", "flint:validate"]
+
+[[package]]
+name = "flint:java-sys"
+kind = "core"
+source = "workspace"
+scope = "build"
+dependencies = []
 
 [[package]]
 name = "flint:jdbc"

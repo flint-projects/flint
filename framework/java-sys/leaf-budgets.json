@@ -1,0 +1,7 @@
+{
+  "flint.java.nativethreadlocal": {
+    "incremental_linked_bytes": 2764,
+    "template_instances": 30,
+    "control": "framework/java-sys/bench/baseline/source/app.d"
+  }
+}

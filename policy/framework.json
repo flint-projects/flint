@@ -499,6 +499,77 @@
     "compiler_peak_rss_bytes"
    ]
   },
+  "java-sys": {
+   "directory": "framework/java-sys",
+   "module": "flint.java.nativethreadlocal",
+   "also": [
+    "flint.java.lang.sys.threadtable",
+    "flint.java.nativethreadidentity"
+   ],
+   "repo": "framework",
+   "licence": "GPL-2.0-only WITH Classpath-exception-2.0",
+   "upstream": "Flint native Java thread ownership",
+   "dependencies": [],
+   "unsafe": [
+    "flint.java.lang.sys.threadtable"
+   ],
+   "bench": {
+    "fixture": "framework/java-sys/bench",
+    "baseline": "framework/java-sys/bench/baseline",
+    "edit_source": "framework/java-sys/source/flint/java/lang/sys/threadtable.d"
+   },
+   "budget": {
+    "dmd_cold_seconds": 0.9,
+    "dmd_incremental_seconds": 0.6,
+    "ldc_cold_seconds": 5.4,
+    "ldc_incremental_seconds": 2.7,
+    "incremental_linked_bytes": 2746,
+    "compiler_peak_rss_bytes": 536870912,
+    "template_instances": 83
+   },
+   "provisional": [
+    "dmd_cold_seconds",
+    "dmd_incremental_seconds",
+    "ldc_cold_seconds",
+    "ldc_incremental_seconds",
+    "compiler_peak_rss_bytes"
+   ]
+  },
+  "java-fiber": {
+   "directory": "framework/java-fiber",
+   "module": "flint.java.fiber",
+   "repo": "framework",
+   "licence": "GPL-2.0-only WITH Classpath-exception-2.0",
+   "upstream": "Flint ThreadLocal fiber composition",
+   "dependencies": [
+    "java",
+    "engine-reactor"
+   ],
+   "also": [
+    "flint.java.fiberthreadidentity"
+   ],
+   "bench": {
+    "fixture": "framework/java-fiber/bench",
+    "baseline": "framework/java-fiber/bench/baseline",
+    "edit_source": "framework/java-fiber/source/flint/java/fiber.d"
+   },
+   "budget": {
+    "dmd_cold_seconds": 0.9,
+    "dmd_incremental_seconds": 0.6,
+    "ldc_cold_seconds": 5.4,
+    "ldc_incremental_seconds": 2.7,
+    "incremental_linked_bytes": 18199,
+    "compiler_peak_rss_bytes": 536870912,
+    "template_instances": 884
+   },
+   "provisional": [
+    "dmd_cold_seconds",
+    "dmd_incremental_seconds",
+    "ldc_cold_seconds",
+    "ldc_incremental_seconds",
+    "compiler_peak_rss_bytes"
+   ]
+  },
   "java-collections": {
    "directory": "framework/java-collections",
    "module": "flint.java.util.bitset",

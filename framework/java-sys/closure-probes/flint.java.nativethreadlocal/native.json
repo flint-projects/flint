@@ -1,0 +1,7 @@
+{
+  "source": "closure/native.d",
+  "leaves": [
+    "flint.java.lang.sys.threadtable"
+  ],
+  "data": []
+}
