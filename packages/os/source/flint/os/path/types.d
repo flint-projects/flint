@@ -43,6 +43,7 @@ enum PathFailure : ubyte
 {
     none,
     notFound,
+    /// A path component is not a directory; this is an indeterminate I/O failure, not absence.
     notDirectory,
     accessDenied,
     loop,

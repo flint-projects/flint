@@ -113,17 +113,35 @@ package(flint.os):
         }
     }
 
-    // SAFETY: preparePath terminates the stack-owned path. Neither call retains it, and the output is a live stat_t.
+    // SAFETY: The checked slice must end in NUL. Neither call retains it, and the output is a live stat_t.
     private int readStatus(scope const(char)[] path, PathLinkMode links, out stat_t attributes) @trusted nothrow @nogc
     {
+        if (path.length == 0 || path[$ - 1] != '\0')
+            return EINVAL;
         const code = links == PathLinkMode.follow ? stat(path.ptr, &attributes) : lstat(path.ptr, &attributes);
         return code == 0 ? 0 : errno;
     }
 
-    // SAFETY: preparePath terminates the stack-owned path, which access reads synchronously without retaining it.
+    // SAFETY: The checked slice must end in NUL. access reads it synchronously without retaining it.
     private int readAccess(scope const(char)[] path, FileAccess mode) @trusted nothrow @nogc
     {
+        if (path.length == 0 || path[$ - 1] != '\0')
+            return EINVAL;
         const code = access(path.ptr, mode == FileAccess.read ? R_OK : F_OK);
         return code == 0 ? 0 : errno;
+    }
+
+    version (unittest)
+    {
+        @("native path wrappers reject slices without a NUL terminator")
+        unittest
+        {
+            stat_t attributes;
+            assert(readStatus("", PathLinkMode.follow, attributes) == EINVAL);
+            assert(readAccess("", FileAccess.exists) == EINVAL);
+            immutable char[1] unterminated = ['x'];
+            assert(readStatus(unterminated[], PathLinkMode.follow, attributes) == EINVAL);
+            assert(readAccess(unterminated[], FileAccess.exists) == EINVAL);
+        }
     }
 }
