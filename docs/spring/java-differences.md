@@ -12636,7 +12636,7 @@ Most deferred elements simply wait for their lane. These record why, or what the
 | framework | `java.util.regex.Pattern#asMatchPredicate()` | 2 | Requires a Predicate adapter for whole-input matching. |
 | framework | `java.util.regex.Pattern#asPredicate()` | 2 | Requires the Matcher search API and a Predicate adapter. |
 | framework | `java.util.regex.Pattern#compile(String)` | 2 | Java supports extended grapheme clusters (\X) and grapheme boundaries (\b{g}). Flint throws RegexUnsupportedException for both. |
-| framework | `java.util.regex.Pattern#compile(String,int)` | 2 | CANON_EQ, LITERAL and UNICODE_CHARACTER_CLASS still throw RegexUnsupportedException. Java supports extended grapheme clusters (\X) and grapheme boundaries (\b{g}). Flint throws RegexUnsupportedException for both. |
+| framework | `java.util.regex.Pattern#compile(String,int)` | 2 | CANON_EQ and UNICODE_CHARACTER_CLASS still throw RegexUnsupportedException. Java supports extended grapheme clusters (\X) and grapheme boundaries (\b{g}). Flint throws RegexUnsupportedException for both. |
 | framework | `java.util.regex.Pattern#matches(String,CharSequence)` | 2 | Java supports extended grapheme clusters (\X) and grapheme boundaries (\b{g}). Flint throws RegexUnsupportedException for both. |
 | framework | `java.util.regex.Pattern#namedGroups()` | 2 | Requires exposing capture names and Java group indices as an unmodifiable map. |
 | framework | `java.util.regex.Pattern#quote(String)` | 2 | Literal text quoting needs an adapter that preserves embedded \E terminators. |

@@ -40,14 +40,16 @@ unittest
         string expression;
         string text;
         bool expected;
+        int flags;
     }
 
     foreach (example; [
         Case("pet", "pet", true), Case("pet", "carpet", false), Case("^pet$", "pet\n", false),
         Case("^pet$", "pet", true), Case("^$", "", true), Case("pet", "", false),
+        Case("a.b", "a.b", true, Pattern.LITERAL), Case("a.b", "axb", false, Pattern.LITERAL),
     ])
     {
-        auto pattern = Pattern.compile(example.expression);
+        auto pattern = Pattern.compile(example.expression, example.flags);
         assert(pattern.matcher(example.text).matches() == example.expected);
 
         const Pattern compiled = pattern;
@@ -85,4 +87,38 @@ unittest
         assert(failure.getIndex() == 1);
         assert(failure.getMessage() == "Unclosed group near index 1\n(");
     }
+}
+
+@("LITERAL matches the expression verbatim and never creates capturing groups")
+unittest
+{
+    const expression = "[abc\\Q\\E]#$";
+    auto compiled = Pattern.compile(expression, Pattern.LITERAL);
+    assert(compiled.pattern() == expression && compiled.flags() == Pattern.LITERAL);
+    auto match = compiled.matcher(expression);
+    assert(match.matches() && match.groupCount() == 0);
+    assert(!compiled.matcher("abc").matches());
+    assert(Pattern.compile("a.b", Pattern.LITERAL).matcher("a.b").matches());
+    assert(!Pattern.compile("a.b", Pattern.LITERAL).matcher("axb").matches());
+    assert(!Pattern.compile("(?i)A", Pattern.LITERAL).matcher("(?i)a").matches());
+    assert(Pattern.compile("", Pattern.LITERAL).matcher("").matches());
+    assert(!Pattern.compile("", Pattern.LITERAL).matcher("x").matches());
+    assert(Pattern.compile("a\0b", Pattern.LITERAL).matcher("a\0b").matches());
+}
+
+@("LITERAL preserves flags and uses only applicable matching options")
+unittest
+{
+    enum literal = Pattern.LITERAL;
+    enum ignored = Pattern.COMMENTS | Pattern.MULTILINE | Pattern.DOTALL | Pattern.UNIX_LINES;
+    auto pattern = Pattern.compile(" x#\n^A$", literal | ignored);
+    assert(pattern.flags() == (literal | ignored));
+    assert(pattern.matcher(" x#\n^A$").matches());
+    pattern = Pattern.compile("aä😀", literal | Pattern.CASE_INSENSITIVE);
+    assert(pattern.matcher("Aä😀").matches());
+    assert(!pattern.matcher("AÄ😀").matches());
+    assert(!Pattern.compile("å", literal | Pattern.CANON_EQ).matcher("a\u030a").matches());
+    pattern = Pattern.compile("\\w", literal | Pattern.UNICODE_CHARACTER_CLASS);
+    assert(pattern.flags() == (literal | Pattern.UNICODE_CHARACTER_CLASS | Pattern.UNICODE_CASE));
+    assert(pattern.matcher("\\w").matches());
 }

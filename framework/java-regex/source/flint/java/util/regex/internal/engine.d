@@ -1,17 +1,17 @@
 /++
 The clean-room engine first used by Hibernate Validator, written from the
 `java.util.regex.Pattern` specification (its Javadoc) and checked against JDK 21's results (tests/golden/regex.tsv).
-OpenJDK's source is not in the licence matrix, so none of it is used.
+OpenJDK's source was outside the licence matrix when the engine was written.
 
 Syntax: literals and escapes (`\t \n \r \f \a \e \0ooo \xhh \x{h...} \uhhhh \cX \Q...\E`), `.`, character classes
 with ranges, nesting, intersection (`&&`) and negation, the predefined classes (`\d \D \s \S \w \W \h \H \v \V`), the
 POSIX classes (`\p{Lower}` ...), `\p{L}` and its aliases, `\R`, groups (capturing, named, non-capturing, atomic),
 look-ahead and look-behind, back-references (`\n`, `\k<name>`), greedy, reluctant and possessive quantifiers,
 anchors and boundaries (`^ $ \A \z \Z \G \b \B`), inline flags and the `Pattern` flags `UNIX_LINES`,
-`CASE_INSENSITIVE` (US-ASCII), `COMMENTS`, `MULTILINE` and `DOTALL`.
+`CASE_INSENSITIVE` (US-ASCII), `COMMENTS`, `MULTILINE`, `DOTALL` and `LITERAL`.
 
 Not yet (`RegexUnsupportedException`): `UNICODE_CASE` with `CASE_INSENSITIVE`, `UNICODE_CHARACTER_CLASS`, `CANON_EQ`,
-`LITERAL`, Unicode properties other than letters, `\N{name}` and `\X`.
+Unicode properties other than letters, `\N{name}` and `\X`.
 
 Matching is a backtracking program run with an explicit stack, so input length never deepens the call stack (request
 threads run on fiber stacks), and with a step budget: Java has none, but a request thread must not hang on a
@@ -122,10 +122,12 @@ struct Regex
 /// `Pattern.compile(regex, flags)`.
 Regex compileRegex(string regex, int flags = 0)
 {
-    enum unsupportedFlags = RegexFlag.CANON_EQ | RegexFlag.LITERAL | RegexFlag.UNICODE_CHARACTER_CLASS;
+    if (flags & RegexFlag.LITERAL)
+        return compileLiteral(regex, flags);
+    enum unsupportedFlags = RegexFlag.CANON_EQ | RegexFlag.UNICODE_CHARACTER_CLASS;
     if (flags & unsupportedFlags)
         throw new RegexUnsupportedException(
-                "Flint's regular expressions do not support CANON_EQ, LITERAL or " ~ "UNICODE_CHARACTER_CLASS yet");
+                "Flint's regular expressions do not support CANON_EQ or UNICODE_CHARACTER_CLASS yet");
     auto parser = Parser(regex, decode(regex), flags);
     const root = parser.parseAll();
     Compiler compiler;
@@ -142,6 +144,29 @@ Regex compileRegex(string regex, int flags = 0)
     result.groups = parser.groupCount;
     result.compiledFlags = parser.flags;
     result.registers = compiler.registers;
+    return result;
+}
+
+private Regex compileLiteral(scope const(char)[] text, int flags)
+{
+    import flint.engine.aot.text : decodeUtf8;
+
+    // Java reports the implied flag even when the literal uses no character classes.
+    if (flags & RegexFlag.UNICODE_CHARACTER_CLASS)
+        flags |= RegexFlag.UNICODE_CASE;
+    const bool ignoreCase = (flags & RegexFlag.CASE_INSENSITIVE) != 0;
+    if (text.length && ignoreCase && (flags & RegexFlag.UNICODE_CASE))
+        throw new RegexUnsupportedException(
+                "Flint's regular expressions do not support UNICODE_CASE case-insensitive matching yet");
+
+    Compiler compiler;
+    size_t at;
+    while (at < text.length)
+        compiler.emitCharacter(decodeUtf8(text, at), ignoreCase);
+    compiler.add(Inst(I.match));
+    Regex result;
+    result.code = compiler.code;
+    result.compiledFlags = flags;
     return result;
 }
 
@@ -1228,13 +1253,18 @@ private struct Compiler
         }
     }
 
+    void emitCharacter(dchar c, bool ignoreCase)
+    {
+        add(ignoreCase && c < 0x80 ? Inst(I.charCI, foldAscii(c)) : Inst(I.char_, c));
+    }
+
     // The single-instruction nodes: a character, `.`, a class, an anchor or a back-reference.
     private void emitSimple(ref const Node n)
     {
         switch (n.op)
         {
         case Op.char_:
-            add(n.caseInsensitive && n.c < 0x80 ? Inst(I.charCI, foldAscii(n.c)) : Inst(I.char_, n.c));
+            emitCharacter(n.c, n.caseInsensitive);
             return;
         case Op.any:
             add(Inst(I.any, x: (n.dotAll ? 1 : 0) | (n.unixLines ? 2 : 0)));

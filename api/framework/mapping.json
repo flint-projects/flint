@@ -8954,7 +8954,7 @@
 "java.util.regex.Pattern#UNICODE_CHARACTER_CLASS":{"status":"ported","d":"flint.java.util.regex.pattern.Pattern.UNICODE_CHARACTER_CLASS"},
 "java.util.regex.Pattern#UNIX_LINES":{"status":"ported","d":"flint.java.util.regex.pattern.Pattern.UNIX_LINES"},
 "java.util.regex.Pattern#compile(String)":{"status":"excluded","category":"deferred","phase":"2","reason":"Java supports extended grapheme clusters (\\X) and grapheme boundaries (\\b{g}). Flint throws RegexUnsupportedException for both."},
-"java.util.regex.Pattern#compile(String,int)":{"status":"excluded","category":"deferred","phase":"2","reason":"CANON_EQ, LITERAL and UNICODE_CHARACTER_CLASS still throw RegexUnsupportedException. Java supports extended grapheme clusters (\\X) and grapheme boundaries (\\b{g}). Flint throws RegexUnsupportedException for both."},
+"java.util.regex.Pattern#compile(String,int)":{"status":"excluded","category":"deferred","phase":"2","reason":"CANON_EQ and UNICODE_CHARACTER_CLASS still throw RegexUnsupportedException. Java supports extended grapheme clusters (\\X) and grapheme boundaries (\\b{g}). Flint throws RegexUnsupportedException for both."},
 "java.util.regex.Pattern#flags()":{"status":"ported","d":"flint.java.util.regex.pattern.Pattern.flags"},
 "java.util.regex.Pattern#matcher(CharSequence)":{"status":"adapted","d":"flint.java.util.regex.pattern.Pattern.matcher","rules":["R5","R26"]},
 "java.util.regex.Pattern#matches(String,CharSequence)":{"status":"excluded","category":"deferred","phase":"2","reason":"Java supports extended grapheme clusters (\\X) and grapheme boundaries (\\b{g}). Flint throws RegexUnsupportedException for both."},
