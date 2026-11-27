@@ -11,19 +11,40 @@ module flint.java.io;
 public import flint.java.io.closeable : Closeable;
 public import flint.java.io.flushable : Flushable;
 
-import flint.java.lang : RuntimeException;
+import flint.java.lang : RuntimeException, javaToString;
 
 @safe:
 
 /// Java's checked `IOException`.
 class IOException : Exception
 {
+    // As in Java's Throwable, `this` marks a cause that is not initialized yet, so the layout needs no flag.
     private Throwable cause_;
 
-    /// `message`, and optionally a `cause`.
-    this(string message = null, Throwable cause = null, string file = __FILE__, size_t line = __LINE__) pure nothrow
+    /// Java's `IOException()` and `IOException(String)`: `message`, with a cause that can still be initialized.
+    this(string message = null, string file = __FILE__, size_t line = __LINE__) pure nothrow
     {
         super(message, file, line);
+        cause_ = this;
+    }
+
+    /// Java's `IOException(String, Throwable)`: `message` and an initialized `cause`, even `null`.
+    this(string message, Throwable cause, string file = __FILE__, size_t line = __LINE__) pure nothrow
+    {
+        super(message, file, line);
+        cause_ = cause;
+    }
+
+    /// Selects the cause overload for a `null` literal, as Java's overload resolution does.
+    this(string message, typeof(null), string file = __FILE__, size_t line = __LINE__) pure nothrow
+    {
+        this(message, cast(Throwable) null, file, line);
+    }
+
+    /// Java's `IOException(Throwable)`: the message is `cause.toString()`, or null; the cause is initialized.
+    this(Throwable cause, string file = __FILE__, size_t line = __LINE__) pure nothrow
+    {
+        super(cause is null ? null : javaToString(cause), file, line);
         cause_ = cause;
     }
 
@@ -36,17 +57,34 @@ class IOException : Exception
     /// The cause; null when unknown.
     inout(Throwable) getCause() inout pure nothrow @nogc
     {
-        return cause_;
+        return cause_ is this ? null : cause_;
+    }
+
+    /// Set the cause once, as Java allows. Throws `IllegalStateException` when it was already initialized, by a
+    /// constructor or an earlier call, and `IllegalArgumentException` for a self-cause; as in Java, either names this
+    /// exception as its cause. Final, so the exceptions it
+    /// throws link only into programs that call it, not into every program that constructs an `IOException`.
+    final IOException initCause(Throwable cause)
+    {
+        import flint.java.lang : IllegalArgumentException, IllegalStateException;
+
+        if (cause_ !is this)
+            throw new IllegalStateException("Can't overwrite cause with " ~ (cause is null
+                    ? "a null" : javaToString(cause)), this);
+        if (cause is this)
+            throw new IllegalArgumentException("Self-causation not permitted", this);
+        cause_ = cause;
+        return this;
     }
 }
 
 /// Thrown when a file or resource does not exist or cannot be opened.
 class FileNotFoundException : IOException
 {
-    /// `message` names the missing file.
+    /// Java's `FileNotFoundException()` and `(String)`: `message` names the missing file; the cause stays open.
     this(string message = null, string file = __FILE__, size_t line = __LINE__) pure nothrow
     {
-        super(message, null, file, line);
+        super(message, file, line);
     }
 }
 

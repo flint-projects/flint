@@ -28,3 +28,26 @@ unittest
     interrupted.bytesTransferred = -7;
     assert(interrupted.bytesTransferred == -7);
 }
+
+@("InterruptedIOException and UnsupportedEncodingException leave the cause open, as Java's super(s) does")
+unittest
+{
+    import flint.java.io.unsupportedencodingexception : UnsupportedEncodingException;
+    import flint.java.lang : IllegalStateException;
+
+    auto cause = new IOException("root");
+    foreach (failure; [
+        new InterruptedIOException, new InterruptedIOException("interrupted"),
+        new UnsupportedEncodingException, new UnsupportedEncodingException("x-unknown")
+    ])
+    {
+        assert(failure.getCause() is null);
+        assert(failure.initCause(cause) is failure && failure.getCause() is cause);
+        bool rejected;
+        try
+            failure.initCause(cause);
+        catch (IllegalStateException)
+            rejected = true;
+        assert(rejected);
+    }
+}

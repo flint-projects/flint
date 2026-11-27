@@ -39,6 +39,6 @@ class InterruptedIOException : IOException
 
     this(string message = null, string file = __FILE__, size_t line = __LINE__) pure nothrow
     {
-        super(message, null, file, line);
+        super(message, file, line);
     }
 }
