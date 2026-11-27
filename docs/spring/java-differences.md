@@ -195,7 +195,7 @@ Ported and adapted elements are written by hand or, where the row carries `gener
 | framework | hibernate-validator@9.1.6.Final | 9 | 0 | 0 | 0 | 791 |
 | framework | thymeleaf@3.1.7.RELEASE | 73 | 90 | 0 | 0 | 4,289 |
 | framework | micrometer-observation@1.18.0 | 47 | 40 | 0 | 0 | 225 |
-| framework | openjdk@21.0.13 | 2,193 | 803 | 0 | 1,957 | 13,468 |
+| framework | openjdk@21.0.13 | 2,193 | 807 | 0 | 1,957 | 13,464 |
 | framework | aspectj@1.9.27 | 19 | 77 | 0 | 191 | 23 |
 | framework | micrometer-commons@1.18.0 | 10 | 16 | 0 | 0 | 35 |
 | security | spring-security@7.2.0 | 550 | 31 | 0 | 88 | 11,744 |
@@ -3174,6 +3174,10 @@ Each element below keeps its Spring meaning but changes shape in D, by the rule 
 | `java.util.regex.Pattern#matcher(CharSequence)` | `flint.java.util.regex.pattern.Pattern.matcher` | [R5](api-mapping.md#r5-optional-and-nullable-values), [R26](api-mapping.md#r26-null-arrays) |  |
 | `java.util.regex.Pattern#pattern()` | `flint.java.util.regex.pattern.Pattern.pattern` | [R5](api-mapping.md#r5-optional-and-nullable-values) |  |
 | `java.util.regex.Pattern#toString()` | `flint.java.util.regex.pattern.Pattern.toString` | [R5](api-mapping.md#r5-optional-and-nullable-values), [R11](api-mapping.md#r11-object-identity-and-equality) |  |
+| `java.util.regex.PatternSyntaxException#<init>(String,String,int)` | `flint.java.util.regex.pattern.PatternSyntaxException.this` | [R5](api-mapping.md#r5-optional-and-nullable-values) | Nullable!string preserves absent fields. The string convenience overload treats slices as present. |
+| `java.util.regex.PatternSyntaxException#getDescription()` | `flint.java.util.regex.pattern.PatternSyntaxException.getDescription` | [R5](api-mapping.md#r5-optional-and-nullable-values) |  |
+| `java.util.regex.PatternSyntaxException#getMessage()` | `flint.java.lang.RuntimeException.getMessage` | [R5](api-mapping.md#r5-optional-and-nullable-values) | The constructor prepares the Java-formatted non-null message for the inherited getter. |
+| `java.util.regex.PatternSyntaxException#getPattern()` | `flint.java.util.regex.pattern.PatternSyntaxException.getPattern` | [R5](api-mapping.md#r5-optional-and-nullable-values) |  |
 
 #### java.util.zip
 
@@ -11279,7 +11283,7 @@ Deferred elements, counted per Java package. Each is planned for the phase shown
 | java.util.function | 89 | 0 |
 | java.util.jar | 32 | 2 |
 | java.util.random | 67 | 0 |
-| java.util.regex | 67 | 0 |
+| java.util.regex | 63 | 0 |
 | java.util.spi | 0 | 43 |
 | java.util.stream | 287 | 0 |
 | java.util.zip | 194 | 0 |
@@ -12644,10 +12648,6 @@ Most deferred elements simply wait for their lane. These record why, or what the
 | framework | `java.util.regex.Pattern#split(CharSequence,int)` | 2 | Requires Matcher search and Java's positive, zero and negative limit behavior. |
 | framework | `java.util.regex.Pattern#splitAsStream(CharSequence)` | 2 | Requires lazy split traversal through the Java Stream adapter. |
 | framework | `java.util.regex.Pattern#splitWithDelimiters(CharSequence,int)` | 2 | Requires Matcher search, Java limit behavior and inclusion of the matched delimiters. |
-| framework | `java.util.regex.PatternSyntaxException#<init>(String,String,int)` | 2 | The constructor still takes plain D strings. Java preserves null separately from empty text for both fields (R5). |
-| framework | `java.util.regex.PatternSyntaxException#getDescription()` | 2 | Java preserves a null description separately from empty text. The D return value still uses a plain string (R5). |
-| framework | `java.util.regex.PatternSyntaxException#getMessage()` | 2 | Java renders absent fields as null, preserves tabs in the caret indentation and uses the platform line separator. Flint still uses empty text, spaces and LF. |
-| framework | `java.util.regex.PatternSyntaxException#getPattern()` | 2 | Java preserves a null pattern separately from empty text. The D return value still uses a plain string (R5). |
 | framework | `java.util.stream.BaseStream#close()` | 2 | Flint's reference Stream lacks Java's close lifecycle. Java closes the pipeline once and propagates ordered handler failures. |
 | framework | `java.util.stream.BaseStream#onClose(Runnable)` | 2 | Flint's reference Stream lacks close handler registration. Java links the handlers to the shared pipeline. |
 | framework | `java.util.stream.Collectors#groupingBy(Function)` | 2 | The existing collector accepts a null classifier result. Java throws NullPointerException during accumulation (R8). |

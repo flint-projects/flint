@@ -2,6 +2,7 @@
 module flint.java.util.regex.pattern;
 
 import flint.java.lang : IllegalArgumentException;
+import std.typecons : Nullable;
 import flint.java.util.regex.internal.engine : Regex, RegexFlag, RegexSyntaxException, compileRegex;
 
 @safe:
@@ -113,11 +114,18 @@ final class Matcher
 /// A malformed regular expression and the approximate position of the error.
 class PatternSyntaxException : IllegalArgumentException
 {
-    private immutable string description;
-    private immutable string expression;
+    private immutable Nullable!string description;
+    private immutable Nullable!string expression;
     private immutable int index;
 
+    /// Construct with present strings. An empty slice remains a present value.
     this(string description, string regex, int index)
+    {
+        this(Nullable!string(description), Nullable!string(regex), index);
+    }
+
+    /// Construct with nullable fields (R5).
+    this(Nullable!string description, Nullable!string regex, int index)
     {
         super(syntaxMessage(description, regex, index));
         this.description = description;
@@ -125,12 +133,12 @@ class PatternSyntaxException : IllegalArgumentException
         this.index = index;
     }
 
-    string getDescription() const pure nothrow @nogc
+    Nullable!string getDescription() const pure nothrow @nogc
     {
         return description;
     }
 
-    string getPattern() const pure nothrow @nogc
+    Nullable!string getPattern() const pure nothrow @nogc
     {
         return expression;
     }
@@ -149,24 +157,42 @@ private Regex compilePattern(string regex, int flags)
         throw new PatternSyntaxException(failure.description, failure.pattern, cast(int) failure.index);
 }
 
-private string syntaxMessage(string description, string expression, int index)
+private string syntaxMessage(Nullable!string description, Nullable!string expression, int index)
 {
     import flint.engine.aot.text : decimal, decodeUtf8;
 
+    version (Windows)
+        enum eol = "\r\n";
+    else
+        enum eol = "\n";
+
+    const detail = description.isNull ? "null" : description.get;
+    const pattern = expression.isNull ? "null" : expression.get;
     if (index < 0)
-        return description ~ "\n" ~ expression;
-    string message = description ~ " near index " ~ decimal(index) ~ "\n" ~ expression;
+        return detail ~ eol ~ pattern;
+    string message = detail ~ " near index " ~ decimal(index) ~ eol ~ pattern;
+    if (expression.isNull)
+        return message;
+
     size_t units;
     size_t cursor;
-    while (cursor < expression.length && units <= index)
-        units += decodeUtf8(expression, cursor) > 0xffff ? 2 : 1;
-    if (units > index)
+    while (cursor < pattern.length && units <= index)
+        units += decodeUtf8(pattern, cursor) > wchar.max ? 2 : 1;
+    if (units <= index)
+        return message;
+
+    auto indicator = new char[eol.length + cast(size_t) index + 1];
+    indicator[0 .. eol.length] = eol;
+    indicator[eol.length .. $ - 1] = ' ';
+    indicator[$ - 1] = '^';
+    cursor = 0;
+    for (size_t indent = 0; indent < index;)
     {
-        auto indicator = new char[cast(size_t) index + 2];
-        indicator[] = ' ';
-        indicator[0] = '\n';
-        indicator[$ - 1] = '^';
-        message ~= indicator[];
+        const codePoint = decodeUtf8(pattern, cursor);
+        if (codePoint == '\t')
+            indicator[eol.length + indent] = '\t';
+        indent += codePoint > wchar.max ? 2 : 1;
     }
+    message ~= indicator[];
     return message;
 }

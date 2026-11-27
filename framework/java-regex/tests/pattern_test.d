@@ -5,6 +5,15 @@ import flint.java.util.regex.pattern : Matcher, Pattern, PatternSyntaxException;
 
 @safe:
 
+version (Windows)
+{
+    private enum eol = "\r\n";
+}
+else
+{
+    private enum eol = "\n";
+}
+
 @("a Pattern is reusable while each Matcher binds its own input")
 unittest
 {
@@ -82,10 +91,10 @@ unittest
     }
     catch (PatternSyntaxException failure)
     {
-        assert(failure.getDescription() == "Unclosed group");
-        assert(failure.getPattern() == "(");
+        assert(failure.getDescription().get == "Unclosed group");
+        assert(failure.getPattern().get == "(");
         assert(failure.getIndex() == 1);
-        assert(failure.getMessage() == "Unclosed group near index 1\n(");
+        assert(failure.getMessage() == "Unclosed group near index 1" ~ eol ~ "(");
     }
 }
 
@@ -121,4 +130,28 @@ unittest
     pattern = Pattern.compile("\\w", literal | Pattern.UNICODE_CHARACTER_CLASS);
     assert(pattern.flags() == (literal | Pattern.UNICODE_CHARACTER_CLASS | Pattern.UNICODE_CASE));
     assert(pattern.matcher("\\w").matches());
+}
+
+@("PatternSyntaxException keeps absent and empty text distinct")
+unittest
+{
+    import std.typecons : Nullable;
+
+    auto exception = new PatternSyntaxException(Nullable!string.init, Nullable!string(""), -2);
+    assert(exception.getDescription().isNull);
+    assert(!exception.getPattern().isNull && exception.getPattern().get == "");
+    assert(exception.getIndex() == -2);
+    assert(exception.getMessage() == "null" ~ eol);
+
+    exception = new PatternSyntaxException("", "\t😀x", 2);
+    assert(!exception.getDescription().isNull);
+    assert(exception.getPattern().get == "\t😀x");
+    assert(exception.getMessage() == " near index 2" ~ eol ~ "\t😀x" ~ eol ~ "\t ^");
+
+    exception = new PatternSyntaxException(Nullable!string("bad"), Nullable!string.init, 0);
+    assert(exception.getPattern().isNull);
+    assert(exception.getMessage() == "bad near index 0" ~ eol ~ "null");
+
+    exception = new PatternSyntaxException("bad", "x", int.max);
+    assert(exception.getMessage() == "bad near index 2147483647" ~ eol ~ "x");
 }
