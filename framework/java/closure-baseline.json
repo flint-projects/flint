@@ -2703,6 +2703,8 @@
         "link|java-nio-charset|flint.java.nio.charset.spi.charsetprovider|dispatch|Oz|undeclared module records flint.java.nio.internal.buffercursor",
         "link|java-nio-charset|flint.java.nio.charset.spi.charsetprovider|dispatch|Oz|undeclared module records flint.java.nio.invalidmarkexception",
         "link|java-nio-charset|flint.java.nio.charset.spi.charsetprovider|dispatch|Oz|undeclared module records flint.java.nio.readonlybufferexception",
+        "link|java-nio-file|flint.java.nio.file.invalidpathexception|format-message|O3|undeclared module records flint.java.nio.file.path",
+        "link|java-nio-file|flint.java.nio.file.invalidpathexception|format-message|Oz|undeclared module records flint.java.nio.file.path",
         "link|java-nio-numeric-buffers|flint.java.nio.doublebuffer|heap-double-cursor|O3|undeclared module records flint.java.nio.charbuffer",
         "link|java-nio-numeric-buffers|flint.java.nio.doublebuffer|heap-double-cursor|O3|undeclared module records flint.java.nio.floatbuffer",
         "link|java-nio-numeric-buffers|flint.java.nio.doublebuffer|heap-double-cursor|O3|undeclared module records flint.java.nio.intbuffer",
