@@ -71,6 +71,10 @@
     "incremental_linked_bytes": 863,
     "template_instances": 64
   },
+  "flint.java.lang.inheritablethreadlocal": {
+    "incremental_linked_bytes": 19180,
+    "template_instances": 390
+  },
   "flint.java.lang.integer": {
     "incremental_linked_bytes": 1760,
     "template_instances": 70

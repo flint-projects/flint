@@ -20,6 +20,7 @@ public import flint.java.lang.javaobject : JavaObject;
 public import flint.java.lang.runnable : Runnable;
 public import flint.java.lang.system : System;
 public import flint.java.lang.thread : Thread;
+public import flint.java.lang.inheritablethreadlocal : InheritableThreadLocal;
 public import flint.java.lang.threadlocal : ThreadLocal;
 
 import flint.engine.aot.objects : objectEquals, objectToHash, objectToString;

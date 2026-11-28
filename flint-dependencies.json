@@ -367,6 +367,10 @@
       "repo": "framework",
       "version": "monorepo"
     },
+    "flint:java-fiber": {
+      "repo": "framework",
+      "version": "monorepo"
+    },
     "flint:java-filetime": {
       "repo": "framework",
       "version": "monorepo"
@@ -504,6 +508,10 @@
       "version": "monorepo"
     },
     "flint:java-regex": {
+      "repo": "framework",
+      "version": "monorepo"
+    },
+    "flint:java-sys": {
       "repo": "framework",
       "version": "monorepo"
     },

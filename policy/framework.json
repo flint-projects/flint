@@ -442,6 +442,7 @@
    "upstream": "openjdk@21.0.13",
    "dependencies": [
     "engine-aot",
+    "java-sys",
     "serde"
    ],
    "bench": {
