@@ -127,6 +127,7 @@
     "flint.engine.desktop.runtime.workers",
     "flint.engine.desktop.runtime.workersReady",
     "flint.engine.http.client.threadGeneration",
+    "flint.java.nativethreadidentity.identity",
     "flint.log.internal.currentConsumer",
     "flint.log.sys.ring.threadProducer",
     "flint.engine.mq.threadIdentity",

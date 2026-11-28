@@ -78,5 +78,9 @@
   "flint.java.lang.long_": {
     "incremental_linked_bytes": 2711,
     "template_instances": 70
+  },
+  "flint.java.lang.thread": {
+    "incremental_linked_bytes": 11022,
+    "template_instances": 346
   }
 }

@@ -464,6 +464,9 @@
     "ldc_cold_seconds",
     "ldc_incremental_seconds",
     "compiler_peak_rss_bytes"
+   ],
+   "unsafe": [
+    "flint.java.lang.sys"
    ]
   },
   "java-base64": {

@@ -1,0 +1,10 @@
+{
+  "source": "closure/thread-identity.d",
+  "leaves": [
+    "flint.java.fiber",
+    "flint.java.lang.internal.threadcontrol",
+    "flint.java.lang.internal.threadlocalbindings",
+    "flint.java.lang.internal.threadlocalprovider"
+  ],
+  "data": []
+}

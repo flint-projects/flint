@@ -3,5 +3,10 @@
     "incremental_linked_bytes": 2112,
     "template_instances": 318,
     "control": "framework/java-fiber/closure/install-control.d"
+  },
+  "flint.java.fiberthreadidentity": {
+    "incremental_linked_bytes": 2253,
+    "template_instances": 292,
+    "control": "framework/java-fiber/closure/install-control.d"
   }
 }

@@ -3,5 +3,10 @@
     "incremental_linked_bytes": 2764,
     "template_instances": 30,
     "control": "framework/java-sys/bench/baseline/source/app.d"
+  },
+  "flint.java.nativethreadidentity": {
+    "incremental_linked_bytes": 132,
+    "template_instances": 32,
+    "control": "framework/java-sys/bench/baseline/source/app.d"
   }
 }

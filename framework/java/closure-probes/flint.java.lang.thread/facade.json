@@ -1,0 +1,10 @@
+{
+  "source": "closure/thread-facade.d",
+  "leaves": [
+    "flint.java.lang",
+    "flint.java.lang.internal.threadcontrol",
+    "flint.java.lang.sys.threadslot",
+    "flint.java.nativethreadidentity"
+  ],
+  "data": []
+}
